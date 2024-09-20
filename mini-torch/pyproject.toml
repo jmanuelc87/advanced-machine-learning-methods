@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "mini-torch"
+version = "0.1.0"
+description = ""
+authors = ["Juan Manuel Carballo <jm.carb@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+numpy = "^2.1.1"
+
+[tool.poetry.group.test.dependencies]
+pytest = "^8.3.3"
+pytest-mock = "*"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
