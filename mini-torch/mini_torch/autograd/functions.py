@@ -61,3 +61,32 @@ class MatmulBackward:
             r1 = np.matmul(gradient, y.T)
             r2 = np.matmul(x.T, gradient)
             return [r1, r2]
+
+class PowBackward:
+    def __init__(self, base, exp):
+        self.input = [base, exp]
+        
+    def backward(self, gradient):
+        base, exp = self.input
+        
+        if isinstance(base, (int, float)):
+            grad_base = np.multiply(gradient, np.pow(base, exp - 1))
+            grad_exp = np.multiply(np.multiply(gradient, np.pow(base, exp)), np.log(base))
+        
+        else:
+            grad_base = np.multiply(np.multiply(gradient, exp), np.pow(base, exp - 1))
+            grad_exp = np.multiply(np.multiply(gradient, np.pow(base, exp)), np.log(base))
+            
+        return [grad_base, grad_exp]
+
+class DivisionBackward:
+    def __init__(self, x, y):
+        self.input = [x, y]
+
+    def backward(self, gradient):
+        x, y = self.input
+        
+        grad_x = np.divide(gradient, y)
+        grad_y = np.multiply(-1, np.multiply(gradient, np.divide(x, np.multiply(y, y))))
+
+        return [grad_x, grad_y]

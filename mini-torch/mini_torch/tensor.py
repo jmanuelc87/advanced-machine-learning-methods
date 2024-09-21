@@ -37,11 +37,10 @@ class Tensor(np.ndarray):
         self.name = None
         self.value = None
 
-
     def backward(self, gradient=None):
         if not self.requires_grad:
             return
-                
+
         if gradient is None:
             if self.shape == ():
                 gradient = tensor(1, 'root')
@@ -49,10 +48,10 @@ class Tensor(np.ndarray):
                 raise RuntimeError()
         else:
           gradient = tensor(gradient, 'root')
-            
+
         stack = [(self, gradient)]
         visited = set()
-                
+
         while stack:
             tr, grad = stack.pop()
             
@@ -65,7 +64,7 @@ class Tensor(np.ndarray):
 
             # Propagate gradients
             if tr.grad_fn is not None:
-                grads = tr.grad_fn.backward(grad)               
+                grads = tr.grad_fn.backward(grad)
                 for t, grad in zip(tr.grad_fn.input, grads):
                     if isinstance(t, Tensor) and t.name not in visited:
                         stack.append((t, grad))
@@ -172,3 +171,51 @@ class Tensor(np.ndarray):
             if result.requires_grad:
                 result.grad_fn = MatmulBackward(self, other)
             return result
+
+    def __pow__(self, other):
+        result = np.pow(self, other)
+        requires_grad = self.requires_grad or other.requires_grad
+        result = tensor(result, uuid.uuid4(), requires_grad=requires_grad)
+            
+        if result.requires_grad:
+            result.grad_fn = PowBackward(self, other)
+        return result
+
+    def __rpow__(self, other):
+        result = np.pow(self, other)
+        requires_grad = self.requires_grad or other.requires_grad
+        result = tensor(result, uuid.uuid4(), requires_grad=requires_grad)
+            
+        if result.requires_grad:
+            result.grad_fn = PowBackward(other, self)
+        return result
+
+    def __truediv__(self, other):
+        if isinstance(other, (int, float)):
+            other = float(other)
+            result = np.divide(self, other)
+            requires_grad = self.requires_grad or other.requires_grad
+            result = tensor(result, uuid.uuid4(), requires_grad=requires_grad)
+            
+            if result.requires_grad:
+                result.grad_fn = DivisionBackward(self, other)
+        
+        elif isinstance(self, Tensor) and isinstance(other, Tensor):
+            result = np.divide(self, other)
+            requires_grad = self.requires_grad or other.requires_grad
+            result = tensor(result, uuid.uuid4(), requires_grad=requires_grad)
+            
+            if result.requires_grad:
+                result.grad_fn = DivisionBackward(self, other)
+
+        return result
+
+    def __rtruediv__(self, other):
+        other = float(other)
+        result = np.divide(self, other)
+        requires_grad = self.requires_grad or other.requires_grad
+        result = tensor(result, uuid.uuid4(), requires_grad=requires_grad)
+        
+        if result.requires_grad:
+            result.grad_fn = DivisionBackward(other, self)
+

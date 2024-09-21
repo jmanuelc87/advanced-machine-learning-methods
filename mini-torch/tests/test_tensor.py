@@ -249,3 +249,24 @@ def test_matmul5():
     z.backward(gradient=np.ones((3,3)))
     
     logger.info("z = %s x.grad = %s and y.grad = %s", z, x.grad, y.grad)
+
+def test_pow1():
+    x = tr.tensor([[10., 10.], [1.5, 1.5]], "x", requires_grad=True)
+    y = 2
+    
+    z = x ** y
+    
+    z.backward(gradient=np.ones((2,2)))
+    
+    logger.info("z = %s, x.grad = %s", z, x.grad)
+
+
+def test_div():
+    x = tr.tensor([[10., 10.], [10., 10.]], "x", requires_grad=True)
+    y = 2
+    
+    z = x / y
+    
+    z.backward(gradient=np.ones((2,2)))
+    
+    logger.info("z = %s, x.grad = %s", z, x.grad)
