@@ -104,7 +104,7 @@ class Tensor(np.ndarray):
             result.grad_fn = AddBackward(other, self)
         
         return result
-    
+
     def __sub__(self, other):
         if isinstance(other, (int, float)):
             other = tensor(other, requires_grad=False)
@@ -116,7 +116,7 @@ class Tensor(np.ndarray):
             result.grad_fn = SubBackward(self, other)
 
         return result
-    
+
     def __rsub__(self, other):
         if isinstance(self, (int, float)):
             self = tensor(self, requires_grad=False)
@@ -128,7 +128,7 @@ class Tensor(np.ndarray):
             result.grad_fn = SubBackward(other, self)
 
         return result
-    
+
     def __mul__(self, other):
         if isinstance(other, (int, float)):
             other = tensor(other, requires_grad=False)
@@ -209,7 +209,27 @@ class Tensor(np.ndarray):
         result = np.divide(self, other)
         requires_grad = self.requires_grad or other.requires_grad
         result = tensor(result, requires_grad=requires_grad)
-        
+
         if result.requires_grad:
             result.grad_fn = DivisionBackward(other, self)
 
+        return result
+
+    def log(self):
+        result = np.log(self)
+        result = tensor(result, requires_grad=self.requires_grad)
+        
+        if result.requires_grad:
+            result.grad_fn = LogBackward(self)
+            
+        return result
+
+    @property
+    def T(self):
+        result = np.transpose(self)
+        result = tensor(result, requires_grad=self.requires_grad)
+
+        if result.requires_grad:
+            result.grad_fn = TransposeBackward(self)
+            
+        return result

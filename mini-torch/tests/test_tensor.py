@@ -299,3 +299,40 @@ def test_div():
     
     assert z1.detach().numpy().all() == z.all()
     assert np.array_equal(x1.grad.detach().numpy(), x.grad)
+
+
+def test_transpose():
+    x = mt.tensor([[20., 20., 15.], [2.5, 2.5, 15.]], requires_grad=True)
+    y = mt.tensor([[10., 10., 10.], [1.5, 1.5, 1.5]], requires_grad=True)
+    
+    x1 = t.tensor([[20., 20., 15.], [2.5, 2.5, 15.]], requires_grad=True)
+    y1 = t.tensor([[10., 10., 10.], [1.5, 1.5, 1.5]], requires_grad=True)
+    
+    z = x @ y.T
+    z1 = x1 @ y1.T
+    
+    z.backward(gradient=np.ones((2,2)))
+    z1.backward(gradient=t.ones((2,2)))
+    
+    logger.info("z = %s, x.grad = %s y.grad = %s", z, x.grad, y.grad)
+    
+    assert z1.detach().numpy().all() == z.all()
+    assert np.array_equal(x1.grad.detach().numpy(), x.grad)
+    assert np.array_equal(y1.grad.detach().numpy(), y.grad)
+
+
+def test_log():
+    x = mt.tensor([[10., 10.], [10., 10.]], requires_grad=True)
+    x1 = t.tensor([[10., 10.], [10., 10.]], requires_grad=True)
+    
+    z = 1 * x.log()
+    z.backward(gradient=np.ones((2,2)))
+    
+    z1 = 1 * x1.log()
+    z1.backward(gradient=t.ones((2,2)))
+    
+    logger.info("\nz = %s, xlog.grad = %s", z, x.grad)
+    logger.info("\nz1 = %s, x1log.grad = %s", z1, x1.grad)
+    
+    assert z1.detach().numpy().all() == z.all()
+    assert np.array_equal(np.round(np.subtract(x1.grad.detach().numpy(), x.grad)), np.zeros((2,2)))

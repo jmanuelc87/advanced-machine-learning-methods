@@ -37,13 +37,11 @@ class ElementwiseMulBackward:
         return [y * gradient, x * gradient]
 
 class TransposeBackward:
-    def __init__(self, x, axis1, axis2):
+    def __init__(self, x):
         self.input = [x]
-        self.axis1 = axis1
-        self.axis2 = axis2
 
     def backward(self, gradient):
-        return [gradient.transpose(self.axis2, self.axis1)]
+        return [np.transpose(gradient)]
 
 class MatmulBackward:
     def __init__(self, x, y):
@@ -54,12 +52,12 @@ class MatmulBackward:
         if x.ndim != y.ndim:
             x = np.expand_dims(x, axis=0)
             gradient = np.expand_dims(gradient, axis=0)            
-            r1 = np.squeeze(np.matmul(y, gradient.T))
-            r2 = np.matmul(x.T, gradient)            
+            r1 = np.squeeze(np.matmul(y, np.transpose(gradient)))
+            r2 = np.matmul(np.transpose(x), gradient)            
             return [r1, r2]
         else:
-            r1 = np.matmul(gradient, y.T)
-            r2 = np.matmul(x.T, gradient)
+            r1 = np.matmul(gradient, np.transpose(y))
+            r2 = np.matmul(np.transpose(x), gradient)
             return [r1, r2]
 
 class PowBackward:
@@ -78,6 +76,14 @@ class PowBackward:
             grad_exp = np.multiply(np.multiply(gradient, np.pow(base, exp)), np.log(base))
             
         return [grad_base, grad_exp]
+    
+class LogBackward:
+    def __init__(self, x):
+        self.input = [x]
+        
+    def backward(self, gradient):
+        grad_input = np.divide(gradient, self.input[0])
+        return [grad_input]
 
 class DivisionBackward:
     def __init__(self, x, y):
