@@ -220,12 +220,32 @@ def test_matmul2():
 
 
 def test_matmul3():
-    x = tr.tensor([[10., 10.], [5., 5.]], "x", requires_grad=True)
+    x = tr.tensor([10., 10.], "x", requires_grad=True)
     y = tr.tensor([[20., 20.], [2.5, 2.5]], "y", requires_grad=True)
     
     z = x @ y
-    a = 2 * z
-        
+    
     z.backward(gradient=np.ones_like(x))
+    
+    logger.info("z = %s x.grad = %s and y.grad = %s", z, x.grad, y.grad)
+
+
+def test_matmul4():
+    x = tr.tensor([[10., 10.], [1.5, 1.5]], "x", requires_grad=True)
+    y = tr.tensor([[20., 20.], [2.5, 2.5]], "y", requires_grad=True)
+    
+    z = x @ y
+    
+    z.backward(gradient=np.ones_like(x))
+    
+    logger.info("z = %s x.grad = %s and y.grad = %s", z, x.grad, y.grad)
+    
+def test_matmul5():
+    x = tr.tensor([[10., 10.], [1.5, 1.5], [2.5, 2.5]], "x", requires_grad=True)
+    y = tr.tensor([[20., 20., 15.], [2.5, 2.5, 15.]], "y", requires_grad=True)
+    
+    z = x @ y
+    
+    z.backward(gradient=np.ones((3,3)))
     
     logger.info("z = %s x.grad = %s and y.grad = %s", z, x.grad, y.grad)

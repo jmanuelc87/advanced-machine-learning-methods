@@ -44,11 +44,11 @@ class Tensor(np.ndarray):
                 
         if gradient is None:
             if self.shape == ():
-                gradient = tensor(1, "root")
+                gradient = tensor(1, 'root')
             else:
                 raise RuntimeError()
         else:
-          gradient = tensor(gradient, "root")
+          gradient = tensor(gradient, 'root')
             
         stack = [(self, gradient)]
         visited = set()
@@ -56,14 +56,16 @@ class Tensor(np.ndarray):
         while stack:
             tr, grad = stack.pop()
             
+            logger.info("current=%s", tr.name)
+            
             if tr.grad is None:
                 tr.grad = grad
             else:
                 tr.grad += grad
-                
+
             # Propagate gradients
             if tr.grad_fn is not None:
-                grads = tr.grad_fn.backward(grad)
+                grads = tr.grad_fn.backward(grad)               
                 for t, grad in zip(tr.grad_fn.input, grads):
                     if isinstance(t, Tensor) and t.name not in visited:
                         stack.append((t, grad))
@@ -157,21 +159,16 @@ class Tensor(np.ndarray):
             return result
         else:
             raise TypeError()
-        
+
     def __rmul__(self, other):
         return self.__mul__(other)
-    
-    # TODO: Implement the transpose operation for including requires_grad flag, the class MatmulBackward is using the transpose op from numpy
+
     def __matmul__(self, other):
         if isinstance(other, Tensor):
-            other = tensor(other, uuid.uuid4(), requires_grad=True)
             result = np.matmul(self, other)
             requires_grad = self.requires_grad or other.requires_grad
             result = tensor(result, uuid.uuid4(), requires_grad=requires_grad)
-
+            
             if result.requires_grad:
                 result.grad_fn = MatmulBackward(self, other)
-
             return result
-        
-    
