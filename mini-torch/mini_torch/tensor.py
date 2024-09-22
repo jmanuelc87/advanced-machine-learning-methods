@@ -17,7 +17,7 @@ def tensor(value, requires_grad=None):
     tensor.requires_grad = requires_grad
     tensor.grad = None
     tensor.grad_fn = None
-    tensor.id = ''.join(secrets.choice(string.ascii_letters) for _ in range(8))
+    tensor.id = ''.join(secrets.choice(string.ascii_letters) for _ in range(6))
     tensor.value = value
     
     return tensor
@@ -71,6 +71,20 @@ class Tensor(np.ndarray):
         self.grad = None
         self.grad_fn = None
         
+    def __requires_grad(self, first, second):
+        if not hasattr(first, 'requires_grad'):
+            if isinstance(first, (int, float)):
+                first = tensor(first)
+            else:
+                first.requires_grad = None
+        if not hasattr(second, 'requires_grad'):
+            if isinstance(second, (int, float)):
+                second = tensor(second)
+            else:
+                second.requires_grad = None
+        
+        return first.requires_grad or second.requires_grad
+        
     def __getitem__(self, indices):
         value = super().__getitem__(indices)
         return value
@@ -85,7 +99,7 @@ class Tensor(np.ndarray):
         if isinstance(other, (int, float)):
             other = tensor(other, requires_grad=False)
         result = np.add(self, other)
-        requires_grad = self.requires_grad or other.requires_grad
+        requires_grad = self.__requires_grad(self, other)
         result = tensor(result, requires_grad=requires_grad)
         
         if result.requires_grad:
@@ -95,9 +109,9 @@ class Tensor(np.ndarray):
 
     def __radd__(self, other):
         if isinstance(other, (int, float)):
-            other = tensor(other, requires_grad=False)
+            other = tensor(other, requires_grad=False)            
         result = np.add(other, self)
-        requires_grad = self.requires_grad or other.requires_grad
+        requires_grad = self.__requires_grad(self, other)
         result = tensor(result, requires_grad=requires_grad)
         
         if result.requires_grad:
@@ -109,7 +123,7 @@ class Tensor(np.ndarray):
         if isinstance(other, (int, float)):
             other = tensor(other, requires_grad=False)
         result = np.subtract(self, other)
-        requires_grad = self.requires_grad or other.requires_grad
+        requires_grad = self.__requires_grad(self, other)
         result = tensor(result, requires_grad=requires_grad)
         
         if result.requires_grad:
@@ -121,7 +135,7 @@ class Tensor(np.ndarray):
         if isinstance(self, (int, float)):
             self = tensor(self, requires_grad=False)
         result = np.subtract(other, self)
-        requires_grad = self.requires_grad or other.requires_grad
+        requires_grad = self.__requires_grad(self, other)
         result = tensor(result, requires_grad=requires_grad)
         
         if result.requires_grad:
@@ -133,7 +147,7 @@ class Tensor(np.ndarray):
         if isinstance(other, (int, float)):
             other = tensor(other, requires_grad=False)
             result = np.dot(self, other)
-            requires_grad = self.requires_grad or other.requires_grad
+            requires_grad = self.__requires_grad(self, other)
             result = tensor(result, requires_grad=requires_grad)
             
             if result.requires_grad:
@@ -143,7 +157,7 @@ class Tensor(np.ndarray):
         
         elif isinstance(other, Tensor):
             result = np.multiply(self, other)
-            requires_grad = self.requires_grad or other.requires_grad
+            requires_grad = self.__requires_grad(self, other)
             result = tensor(result, requires_grad=requires_grad)
             
             if result.requires_grad:
@@ -159,7 +173,7 @@ class Tensor(np.ndarray):
     def __matmul__(self, other):
         if isinstance(other, Tensor):
             result = np.matmul(self, other)
-            requires_grad = self.requires_grad or other.requires_grad
+            requires_grad = self.__requires_grad(self, other)
             result = tensor(result, requires_grad=requires_grad)
             
             if result.requires_grad:
@@ -168,7 +182,7 @@ class Tensor(np.ndarray):
 
     def __pow__(self, other):
         result = np.pow(self, other)
-        requires_grad = self.requires_grad or other.requires_grad
+        requires_grad = self.__requires_grad(self, other)
         result = tensor(result, requires_grad=requires_grad)
             
         if result.requires_grad:
@@ -177,7 +191,7 @@ class Tensor(np.ndarray):
 
     def __rpow__(self, other):
         result = np.pow(self, other)
-        requires_grad = self.requires_grad or other.requires_grad
+        requires_grad = self.__requires_grad(self, other)
         result = tensor(result, requires_grad=requires_grad)
             
         if result.requires_grad:
@@ -188,7 +202,7 @@ class Tensor(np.ndarray):
         if isinstance(other, (int, float)):
             other = float(other)
             result = np.divide(self, other)
-            requires_grad = self.requires_grad or other.requires_grad
+            requires_grad = self.__requires_grad(self, other)
             result = tensor(result, requires_grad=requires_grad)
             
             if result.requires_grad:
@@ -196,7 +210,7 @@ class Tensor(np.ndarray):
         
         elif isinstance(self, Tensor) and isinstance(other, Tensor):
             result = np.divide(self, other)
-            requires_grad = self.requires_grad or other.requires_grad
+            requires_grad = self.__requires_grad(self, other)
             result = tensor(result, requires_grad=requires_grad)
             
             if result.requires_grad:
@@ -207,7 +221,7 @@ class Tensor(np.ndarray):
     def __rtruediv__(self, other):
         other = float(other)
         result = np.divide(self, other)
-        requires_grad = self.requires_grad or other.requires_grad
+        requires_grad = self.__requires_grad(self, other)
         result = tensor(result, requires_grad=requires_grad)
 
         if result.requires_grad:
@@ -221,7 +235,25 @@ class Tensor(np.ndarray):
         
         if result.requires_grad:
             result.grad_fn = LogBackward(self)
-            
+
+        return result
+    
+    def sigmoid(self):
+        result = np.divide(1, np.add(1, np.exp(np.multiply(-1, self))))
+        result = tensor(result, requires_grad=self.requires_grad)
+
+        if result.requires_grad:
+            result.grad_fn = SigmoidBackward(self)
+
+        return result
+
+    def sum(self, axis=None, keepdim=False):
+        result = np.sum(self.view(np.ndarray), axis=axis, keepdims=keepdim)
+        result = tensor(result, requires_grad=self.requires_grad)
+
+        if result.requires_grad:
+            result.grad_fn = SumBackward(self)
+
         return result
 
     @property
@@ -233,3 +265,4 @@ class Tensor(np.ndarray):
             result.grad_fn = TransposeBackward(self)
             
         return result
+    

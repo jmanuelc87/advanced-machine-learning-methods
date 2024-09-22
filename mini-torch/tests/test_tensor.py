@@ -336,3 +336,57 @@ def test_log():
     
     assert z1.detach().numpy().all() == z.all()
     assert np.array_equal(np.round(np.subtract(x1.grad.detach().numpy(), x.grad)), np.zeros((2,2)))
+
+
+def test_sigmoid():
+    x = mt.tensor([[1.2, 1.3, 1.4, 1.5, 1.6]], requires_grad=True)
+    x1 = t.tensor([[1.2, 1.3, 1.4, 1.5, 1.6]], requires_grad=True)
+    
+    z = 1 * x.sigmoid()
+    z.backward(gradient=np.ones((1,5)))
+    
+    z1 = 1 * x1.sigmoid()
+    z1.backward(gradient=t.ones(1,5))
+    
+    logger.info("\nz = %s, xSigmoid.grad = %s", z, x.grad)
+    logger.info("\nz1 = %s, x1Sigmoid.grad = %s", z1, x1.grad)
+
+
+def test_sum():
+    x = mt.tensor([[1.2, 1.3, 1.4, 1.5, 1.6]], requires_grad=True)
+    x1 = t.tensor([[1.2, 1.3, 1.4, 1.5, 1.6]], requires_grad=True)
+    
+    z = 1 * x.sum()
+    z.backward(gradient=np.ones((5,)))
+    
+    z1 = 1 * x1.sum()
+    z1.backward()
+    
+    logger.info("\nz = %s, xSum.grad = %s", z, x.grad)
+    logger.info("\nz1 = %s, x1Sum.grad = %s", z1, x1.grad)
+
+def test_sum1():
+    x = mt.tensor([[1.2, 1.3, 1.4, 1.5, 1.6]], requires_grad=True)
+    x1 = t.tensor([[1.2, 1.3, 1.4, 1.5, 1.6]], requires_grad=True)
+    
+    z = 1 * x.sum(axis=1)
+    z.backward(gradient=np.ones((5,)))
+    
+    z1 = 1 * x1.sum(axis=1)
+    z1.backward()
+    
+    logger.info("\nz = %s, xSum.grad = %s", z, x.grad)
+    logger.info("\nz1 = %s, x1Sum.grad = %s", z1, x1.grad)
+    
+def test_sum2():
+    x = mt.tensor([[1.2, 1.3, 1.4, 1.5, 1.6]], requires_grad=True)
+    x1 = t.tensor([[1.2, 1.3, 1.4, 1.5, 1.6]], requires_grad=True)
+    
+    z = 1 * x.sum(axis=1, keepdim=True)
+    z.backward(gradient=np.ones((5,)))
+    
+    z1 = 1 * x1.sum(axis=1, keepdim=True)
+    z1.backward()
+    
+    logger.info("\nz = %s, xSum.grad = %s", z, x.grad)
+    logger.info("\nz1 = %s, x1Sum.grad = %s", z1, x1.grad)

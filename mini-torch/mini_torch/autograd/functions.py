@@ -92,7 +92,40 @@ class DivisionBackward:
     def backward(self, gradient):
         x, y = self.input
         
-        grad_x = np.divide(gradient, y)
-        grad_y = np.multiply(-1, np.multiply(gradient, np.divide(x, np.multiply(y, y))))
+        grad_x = gradient / y
+        grad_y = -1 * gradient * (x / (y * y))
 
         return [grad_x, grad_y]
+
+class SigmoidBackward:
+    def __init__(self, input):
+        self.input = [input]
+        
+    def backward(self, gradient):
+        sigmoid_x = self.input[0].sigmoid()
+        grad_input = gradient * sigmoid_x * (1 - sigmoid_x)
+        
+        return [grad_input]
+    
+class SumBackward:
+    def __init__(self, x, axis=None, keepdim=False):
+        self.input = [x]
+        self.axis = axis
+        self.keepdim = keepdim
+    
+    def backward(self, gradient):
+        logger.info("tuple=%s", self.input[0].shape)
+        input_shape = self.input[0].shape + tuple()
+        if self.axis == None:
+            grad_output = gradient[[0] * len(gradient.shape)] * np.ones_like(self.input[0])
+        else:
+            if self.keepdim:
+                input_shape = input_shape[:self.axis] + [1] + input_shape[self.axis+1:]
+            else:
+                input_shape = input_shape[:self.axis] + input_shape[self.axis+1:]
+                
+            grad_output_shape = list(input_shape)
+            grad_output = np.reshape(gradient, shape=grad_output_shape)
+            grad_output = grad_output + np.zeros_like(self.input[0])
+            
+        return [grad_output]
