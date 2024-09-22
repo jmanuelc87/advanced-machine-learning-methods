@@ -357,7 +357,7 @@ def test_sum():
     x1 = t.tensor([[1.2, 1.3, 1.4, 1.5, 1.6]], requires_grad=True)
     
     z = 1 * x.sum()
-    z.backward(gradient=np.ones((5,)))
+    z.backward(gradient=np.ones((5)))
     
     z1 = 1 * x1.sum()
     z1.backward()
@@ -370,7 +370,7 @@ def test_sum1():
     x1 = t.tensor([[1.2, 1.3, 1.4, 1.5, 1.6]], requires_grad=True)
     
     z = 1 * x.sum(axis=1)
-    z.backward(gradient=np.ones((5,)))
+    z.backward(gradient=np.ones((1,)))
     
     z1 = 1 * x1.sum(axis=1)
     z1.backward()
@@ -382,11 +382,91 @@ def test_sum2():
     x = mt.tensor([[1.2, 1.3, 1.4, 1.5, 1.6]], requires_grad=True)
     x1 = t.tensor([[1.2, 1.3, 1.4, 1.5, 1.6]], requires_grad=True)
     
-    z = 1 * x.sum(axis=1, keepdim=True)
-    z.backward(gradient=np.ones((5,)))
+    z = 1 * x.sum(axis=1, keepdims=True)
+    z.backward(gradient=np.ones((1,)))
     
-    z1 = 1 * x1.sum(axis=1, keepdim=True)
+    z1 = 1 * x1.sum(axis=1, keepdims=True)
     z1.backward()
     
     logger.info("\nz = %s, xSum.grad = %s", z, x.grad)
     logger.info("\nz1 = %s, x1Sum.grad = %s", z1, x1.grad)
+
+
+def test_max():
+    x = mt.tensor([[1.2, 1.3, 1.4, 1.5, 1.6]], requires_grad=True)
+    x1 = t.tensor([[1.2, 1.3, 1.4, 1.5, 1.6]], requires_grad=True)
+    
+    z = 1 * x.max()
+    z.backward(gradient=np.ones((5)))
+    
+    z1 = 1 * x1.max()
+    z1.backward()
+    
+    logger.info("\nz = %s, xMax.grad = %s", z, x.grad)
+    logger.info("\nz1 = %s, x1Max.grad = %s", z1, x1.grad)
+
+def test_max1():
+    x = mt.tensor([[1.2, 1.3, 1.4, 1.5, 1.6]], requires_grad=True)
+    x1 = t.tensor([[1.2, 1.3, 1.4, 1.5, 1.6]], requires_grad=True)
+    
+    z = 1 * x.max(axis=1)
+    z.backward(gradient=np.ones((1,)))
+    
+    z1 = 1 * x1.max(dim=1)
+    z1[0].backward()
+    
+    logger.info("\nz = %s, xMax.grad = %s", z, x.grad)
+    logger.info("\nz1 = %s, x1Max.grad = %s", z1, x1.grad)
+    
+def test_max2():
+    x = mt.tensor([[1.2, 1.3, 1.4, 1.5, 1.6]], requires_grad=True)
+    x1 = t.tensor([[1.2, 1.3, 1.4, 1.5, 1.6]], requires_grad=True)
+    
+    z = 1 * x.max(axis=1, keepdims=True)
+    z.backward(gradient=np.ones((1,)))
+    
+    z1 = 1 * x1.max(axis=1, keepdims=True)
+    z1[0].backward()
+    
+    logger.info("\nz = %s, xMax.grad = %s", z, x.grad)
+    logger.info("\nz1 = %s, x1Max.grad = %s", z1, x1.grad)
+
+
+def test_min():
+    x = mt.tensor([[1.2, 1.3, 1.4, 1.5, 1.6]], requires_grad=True)
+    x1 = t.tensor([[1.2, 1.3, 1.4, 1.5, 1.6]], requires_grad=True)
+    
+    z = 1 * x.min()
+    z.backward(gradient=np.ones((5,)))
+    
+    z1 = 1 * x1.min()
+    z1.backward()
+    
+    logger.info("\nz = %s, xMin.grad = %s", z, x.grad)
+    logger.info("\nz1 = %s, x1Min.grad = %s", z1, x1.grad)
+
+def test_min1():
+    x = mt.tensor([[1.2, 1.3, 1.4, 1.5, 1.6]], requires_grad=True)
+    x1 = t.tensor([[1.2, 1.3, 1.4, 1.5, 1.6]], requires_grad=True)
+    
+    z = 1 * x.min(axis=1)
+    z.backward(gradient=np.ones((1,)))
+    
+    z1 = 1 * x1.min(dim=1)
+    z1[0].backward()
+    
+    logger.info("\nz = %s, xMin.grad = %s", z, x.grad)
+    logger.info("\nz1 = %s, x1Min.grad = %s", z1, x1.grad)
+    
+def test_min2():
+    x = mt.tensor([[1.2, 1.3, 1.4, 1.5, 1.6]], requires_grad=True)
+    x1 = t.tensor([[1.2, 1.3, 1.4, 1.5, 1.6]], requires_grad=True)
+    
+    z = 1 * x.min(axis=1, keepdims=True)
+    z.backward(gradient=np.ones((1,)))
+    
+    z1 = 1 * x1.min(axis=1, keepdims=True)
+    z1[0].backward()
+    
+    logger.info("\nz = %s, xMin.grad = %s", z, x.grad)
+    logger.info("\nz1 = %s, x1Min.grad = %s", z1, x1.grad)

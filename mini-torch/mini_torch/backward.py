@@ -108,24 +108,75 @@ class SigmoidBackward:
         return [grad_input]
     
 class SumBackward:
-    def __init__(self, x, axis=None, keepdim=False):
+    def __init__(self, x, axis=None, keepdims=False):
         self.input = [x]
         self.axis = axis
-        self.keepdim = keepdim
+        self.keepdim = keepdims
     
     def backward(self, gradient):
-        logger.info("tuple=%s", self.input[0].shape)
         input_shape = self.input[0].shape + tuple()
         if self.axis == None:
             grad_output = gradient[[0] * len(gradient.shape)] * np.ones_like(self.input[0])
         else:
-            if self.keepdim:
-                input_shape = input_shape[:self.axis] + [1] + input_shape[self.axis+1:]
-            else:
-                input_shape = input_shape[:self.axis] + input_shape[self.axis+1:]
+            input_shape = input_shape[:self.axis] + input_shape[self.axis+1:]
                 
             grad_output_shape = list(input_shape)
             grad_output = np.reshape(gradient, shape=grad_output_shape)
             grad_output = grad_output + np.zeros_like(self.input[0])
             
+        return [grad_output]
+    
+    
+class MaxBackward:
+    def __init__(self, x, axis=None, keepdims=False):
+        self.input = [x]
+        self.axis = axis
+        self.keepdims = keepdims
+        
+    def backward(self, gradient):
+        input_shape = self.input[0].shape + tuple()
+        if self.axis == None:
+            max_value = np.max(self.input[0].view(np.ndarray), axis=self.axis, keepdims=self.keepdims)
+            mask = np.equal(self.input[0], max_value)
+            
+            grad_output = gradient[[0] * len(gradient.shape)] * np.ones_like(self.input[0])
+            grad_output = np.divide((grad_output * mask),  np.sum(mask.view(np.ndarray)))
+        else:
+            input_shape = input_shape[:self.axis] + input_shape[self.axis+1:]
+            
+            grad_output_shape = list(input_shape)
+            grad_output = np.reshape(gradient, shape=grad_output_shape)
+            max_values = np.max(self.input[0].view(np.ndarray), axis=self.axis, keepdims=self.keepdims)
+            mask = np.equal(self.input[0], max_values)
+
+            grad_output = np.multiply(grad_output, mask)
+        
+        return [grad_output]
+
+
+class MinBackward:
+    def __init__(self, x, axis=None, keepdims=False):
+        self.input = [x]
+        self.axis = axis
+        self.keepdims = keepdims
+        
+    def backward(self, gradient):
+        input_shape = self.input[0].shape + tuple()
+        
+        if self.axis == None:
+            min_value = np.min(self.input[0].view(np.ndarray), axis=self.axis, keepdims=self.keepdims)
+            mask = np.equal(self.input[0], min_value)
+            
+            grad_output = gradient[[0] * len(gradient.shape)] * np.ones_like(self.input[0])
+            grad_output = np.divide((grad_output * mask), np.sum(mask.view(np.ndarray)))
+        else:
+            input_shape = input_shape[:self.axis] + input_shape[self.axis+1:]
+            
+            grad_output_shape = list(input_shape)
+            grad_output = np.reshape(gradient, shape=grad_output_shape)
+            min_values = np.min(self.input[0].view(np.ndarray), axis=self.axis, keepdims=self.keepdims)
+            mask = np.equal(self.input[0], min_values)
+            
+            grad_output = np.multiply(grad_output, mask)
+
         return [grad_output]

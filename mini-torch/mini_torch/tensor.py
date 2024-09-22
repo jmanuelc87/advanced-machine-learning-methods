@@ -3,7 +3,7 @@ import secrets
 import logging
 import numpy as np
 
-from .autograd.functions import *
+from .backward import *
 
 logger = logging.getLogger(__file__)
 
@@ -247,12 +247,30 @@ class Tensor(np.ndarray):
 
         return result
 
-    def sum(self, axis=None, keepdim=False):
-        result = np.sum(self.view(np.ndarray), axis=axis, keepdims=keepdim)
+    def sum(self, axis=None, keepdims=False):
+        result = np.sum(self.view(np.ndarray), axis=axis, keepdims=keepdims)
         result = tensor(result, requires_grad=self.requires_grad)
 
         if result.requires_grad:
-            result.grad_fn = SumBackward(self)
+            result.grad_fn = SumBackward(self, axis=axis, keepdims=keepdims)
+
+        return result
+    
+    def max(self, axis=None, keepdims=False):
+        result = np.max(self.view(np.ndarray), axis=axis, keepdims=keepdims)
+        result = tensor(result, requires_grad=self.requires_grad)
+
+        if result.requires_grad:
+            result.grad_fn = MaxBackward(self)
+
+        return result
+
+    def min(self, axis=None, keepdims=False):
+        result = np.min(self.view(np.ndarray), axis=axis, keepdims=keepdims)
+        result = tensor(result, requires_grad=self.requires_grad)
+
+        if result.requires_grad:
+            result.grad_fn = MinBackward(self)
 
         return result
 
