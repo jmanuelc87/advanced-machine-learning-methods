@@ -166,3 +166,4 @@ cython_debug/
 asl_data/
 cifar10/
 embeddings/
+ag_news/
