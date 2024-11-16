@@ -164,3 +164,8 @@ cython_debug/
 
 # Datasets should not be committed
 asl_data/
+cifar10/
+embeddings/
+ag_news/
+translations/
+mlruns/
