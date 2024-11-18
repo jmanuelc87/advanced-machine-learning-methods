@@ -10,4 +10,4 @@
 - [https://aimatters.wordpress.com/2019/06/17/the-softmax-function-derivative](https://aimatters.wordpress.com/2019/06/17/the-softmax-function-derivative)
 - [https://aimatters.wordpress.com/2020/06/14/derivative-of-softmax-layer](https://aimatters.wordpress.com/2020/06/14/derivative-of-softmax-layer)
 - [https://aimatters.wordpress.com/2020/07/01/the-softmax-function-derivative-part-3](https://aimatters.wordpress.com/2020/07/01/the-softmax-function-derivative-part-3)
-- [https://youtu.be/kCc8FmEb1nY?si=L3T-JxW76yFFsNeL](Transformers with Andrej Karpathy)
+- [https://youtu.be/kCc8FmEb1nY?si=L3T-JxW76yFFsNeL](https://youtu.be/kCc8FmEb1nY?si=L3T-JxW76yFFsNeL) Attention with Andrej Karpathy
